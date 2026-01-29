@@ -1,0 +1,71 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+}
+
+group = 'com.enyoi.arka'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // JPA/Hibernate
+    implementation 'org.hibernate:hibernate-core:6.4.1.Final'
+    implementation 'org.hibernate:hibernate-community-dialects:6.4.1.Final'
+    implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
+
+    // Logging
+    implementation 'ch.qos.logback:logback-classic:1.4.11'
+
+    // Test dependencies
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation "org.assertj:assertj-core:3.25.1"
+    testImplementation "org.mockito:mockito-junit-jupiter:5.+"
+}
+
+test {
+    useJUnitPlatform()
+
+    testLogging {
+        exceptionFormat = "full"
+        showStandardStreams = true
+        events = ["passed", "failed", "skipped"]
+    }
+
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.setRequired true
+        xml.setOutputLocation layout.buildDirectory.file("reports/jacoco.xml")
+        csv.setRequired false
+        html.setRequired true
+        html.setOutputLocation layout.buildDirectory.dir("reports/jacocoHtml")
+    }
+    finalizedBy jacocoTestCoverageVerification
+}
+
+jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+    // Deshabilitado para desarrollo TDD inicial
+    enabled = false
+}
+
+tasks.register('run', JavaExec) {
+    group = 'application'
+    description = 'Ejecuta la aplicación Arka Distribution'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.enyoi.arka.ArkaApplication'
+    standardInput = System.in
+}
